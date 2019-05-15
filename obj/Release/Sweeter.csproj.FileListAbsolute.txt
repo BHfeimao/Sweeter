@@ -1,0 +1,10 @@
+D:\Code\test\Sweeter\bin\Release\Sweeter.dll
+D:\Code\test\Sweeter\bin\Release\Sweeter.pdb
+D:\Code\test\Sweeter\obj\Release\Sweeter.dll
+D:\Code\test\Sweeter\obj\Release\Sweeter.pdb
+D:\Code\GDKY_Province_MS\GDKY_Province_MS\Sweeter\bin\Release\System.Web.Mvc.dll
+D:\Code\GDKY_Province_MS\GDKY_Province_MS\Sweeter\bin\Release\SweeterForMVC5_2_2.dll
+D:\Code\GDKY_Province_MS\GDKY_Province_MS\Sweeter\bin\Release\SweeterForMVC5_2_2.pdb
+D:\Code\GDKY_Province_MS\GDKY_Province_MS\Sweeter\obj\Release\SweeterForMVC5_2_2.dll
+D:\Code\GDKY_Province_MS\GDKY_Province_MS\Sweeter\obj\Release\SweeterForMVC5_2_2.pdb
+D:\Code\GDKY_Province_MS\GDKY_Province_MS\Sweeter\obj\Release\Sweeter.csprojResolveAssemblyReference.cache
