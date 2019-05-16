@@ -117,7 +117,7 @@ namespace Sweeter
         /// </summary>
         /// <param name="ControllerNames">控制器名称数组</param>
         /// <param name="IsAll">是否导出全部 默认否</param>
-        public void ExportApiWord(string[] ControllerNames, bool IsAll = false)
+        public ActionResult ExportApiWord(string[] ControllerNames, bool IsAll = false)
         {
             List<ControllerModel> controllers = GetControllerModelList();
             if (!IsAll) controllers = controllers.Where(t => ControllerNames.Contains(t.ControllerName)).ToList();
@@ -233,7 +233,9 @@ namespace Sweeter
                 ItemSettingList = itemSettingList
             };
 
-            NpoiWordHelper.ExportDocument(documentSetting);
+            var bytes = NpoiWordHelper.ExportDocument(documentSetting);
+
+            return File(bytes, "application/vnd.ms-word", DateTime.Now.ToString("yyyyMMddHHmmss") + ".docx");
         }
 
         #region 私有方法

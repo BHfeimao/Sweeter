@@ -16,7 +16,7 @@ namespace Sweeter
         /// 创建文档
         /// </summary>
         /// <param name="setting"></param>
-        public static void ExportDocument(DocumentSetting setting)
+        public static byte[] ExportDocument(DocumentSetting setting)
         {
             XWPFDocument docx = new XWPFDocument();
             MemoryStream ms = new MemoryStream();
@@ -113,14 +113,15 @@ namespace Sweeter
 
             //开始写入
             docx.Write(ms);
+            //using (FileStream fs = new FileStream(setting.SavePath, FileMode.Create, FileAccess.Write))
+            //{
+            //    byte[] data = ms.ToArray();
+            //    fs.Write(data, 0, data.Length);
+            //    fs.Flush();
+            //}
+            //ms.Close();
 
-            using (FileStream fs = new FileStream(setting.SavePath, FileMode.Create, FileAccess.Write))
-            {
-                byte[] data = ms.ToArray();
-                fs.Write(data, 0, data.Length);
-                fs.Flush();
-            }
-            ms.Close();
+            return ms.ToArray();
         }
 
         /// <summary>
