@@ -192,7 +192,7 @@ namespace Sweeter
                     this._fontName = value;
                 }
             }
-            private int _fontSize = 44;
+            private int _fontSize = 34;
             /// <summary>
             /// 字体大小，默认2号字体
             /// </summary>
