@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Configuration;
+using NPOI.XWPF.UserModel;
+using NPOI.OpenXmlFormats.Wordprocessing;
 
 namespace Sweeter
 {
@@ -127,38 +129,93 @@ namespace Sweeter
                 var mainContentSettingList = new List<NpoiWordHelper.ContentItemSetting>();
                 foreach (var method in methodList)
                 {
-                    var _fontSize = 24;
+                    var methodModel = this.GetMethodModelByName(controller.ControllerName, method.MethodName);
+                    var _fontSize = 17;
+                    //mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    //{
+                    //    MainContent = "Method：" + method.Method,
+                    //    FontSize = _fontSize
+                    //});
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
-                        MainContent = "Method：" + method.Method,
+                        MainContent = "方法名称：" + method.MethodName,
+                        FontSize = _fontSize,
+                        HasBold = true
+                    });
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "接口说明：" + method.MethodSummary,
                         FontSize = _fontSize
                     });
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
-                        MainContent = "MethodName：" + method.MethodName,
+                        MainContent = "请求类型：" + method.MethodType,
                         FontSize = _fontSize
                     });
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
-                        MainContent = "MethodSummary：" + method.MethodSummary,
+                        MainContent = "请求URL：" + method.MethodUrl,
                         FontSize = _fontSize
                     });
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
-                        MainContent = "MethodType：" + method.MethodType,
+                        MainContent = "返回注释：" + method.ReturnRemark,
                         FontSize = _fontSize
                     });
+
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
-                        MainContent = "MethodUrl：" + method.MethodUrl,
-                        FontSize = _fontSize
+                        MainContent = "请求参数：",
+                        FontSize = _fontSize,
+                        HasBold = true
                     });
+
+                    //循环获取请求参数
+                    string[][] paramTableArray = new string[methodModel.ParamList.Count + 1][];
+                    paramTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
+                    for (int i = 0; i < methodModel.ParamList.Count; i++)
+                    {
+                        var param = methodModel.ParamList[i];
+                        paramTableArray[i + 1] = new string[] { param.ColumName, param.ColumType, param.DefaultValue, param.ColumSummary };
+                    }
+
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = @"",
+                        FontSize = _fontSize,
+                        TableArray = paramTableArray
+                    });
+
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                      {
+                          MainContent = "响应内容：",
+                          FontSize = _fontSize,
+                          HasBold = true
+                      });
+
+                    //循环获取响应内容
+                    string[][] returnTableArray = new string[methodModel.ReturnList.Count + 1][];
+                    returnTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
+                    for (int i = 0; i < methodModel.ReturnList.Count; i++)
+                    {
+                        var param = methodModel.ReturnList[i];
+                        returnTableArray[i + 1] = new string[] { param.ColumName, param.ColumType, param.DefaultValue, param.ColumSummary };
+                    }
+
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = @"",
+                        FontSize = _fontSize,
+                        TableArray = returnTableArray
+                    });
+                    //添加回车
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
                         MainContent = @"
-                        ",
+",
                         FontSize = _fontSize
                     });
+
                 }
 
                 itemSettingList.Add(new NpoiWordHelper.ItemSetting()
@@ -401,7 +458,6 @@ namespace Sweeter
                 GetJsonModle(type.BaseType, propertyMembers, depth, ref list);
             }
         }
-
 
         #endregion
     }

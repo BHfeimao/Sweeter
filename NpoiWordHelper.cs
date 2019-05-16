@@ -1,6 +1,7 @@
 ﻿using NPOI.OpenXmlFormats.Wordprocessing;
 using NPOI.XWPF.UserModel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -65,7 +66,7 @@ namespace Sweeter
                         };
 
                         //单倍为默认值（240）不需设置，1.5倍=240X1.5=360，2倍=240X2=480
-                        p.AddNewPPr().AddNewSpacing().line = "400";//固定20磅
+                        p.AddNewPPr().AddNewSpacing().line = "300";//固定20磅
                         p.AddNewPPr().AddNewSpacing().lineRule = ST_LineSpacingRule.exact;
 
                         gr = gp.CreateRun();
@@ -78,6 +79,33 @@ namespace Sweeter
                         rpr.AddNewB().val = mainContentSetting.HasBold;
 
                         gr.SetText(mainContentSetting.MainContent);
+                    }
+                    //创建文档表格
+                    if (mainContentSetting.TableArray != null && mainContentSetting.TableArray.Length > 0)
+                    {
+                        var ary = mainContentSetting.TableArray;
+                        //创建表格-提前创建好表格后填数
+                        XWPFTable tableContent = docx.CreateTable(ary.Length, ary[0].Length);//4行5列
+                        tableContent.Width = 1000 * ary[0].Length;
+                        for (int i = 0; i < ary.Length; i++)
+                        {
+                            tableContent.SetColumnWidth(i, 1000);
+                        }
+
+                        //tableContent.GetRow(0).GetCell(0).SetParagraph(SetCellText(docx, tableContent, "地点"));
+                        //tableContent.GetRow(0).GetCell(1).SetParagraph(SetCellText(docx, tableContent, "日期"));
+                        //tableContent.GetRow(0).GetCell(2).SetParagraph(SetCellText(docx, tableContent, "男性"));
+                        //tableContent.GetRow(0).GetCell(3).SetParagraph(SetCellText(docx, tableContent, "女性"));
+                        //tableContent.GetRow(0).GetCell(4).SetParagraph(SetCellText(docx, tableContent, "合计"));
+
+                        for (var i = 0; i < ary.Length; i++)//有3个数组
+                        {
+                            var ls = ary[i];
+                            for (var j = 0; j < ls.Length; j++)
+                            {
+                                tableContent.GetRow(i).GetCell(j).SetParagraph(SetCellText(docx, tableContent, ls[j].ToString()));
+                            }
+                        }
                     }
                 }
             }
@@ -138,6 +166,7 @@ namespace Sweeter
             public List<ContentItemSetting> MainContentSettingList { get; set; }
         }
 
+
         /// <summary>
         /// 文档内容相关
         /// </summary>
@@ -151,6 +180,8 @@ namespace Sweeter
             /// 主要内容
             /// </summary>
             public string MainContent { get; set; }
+            public string[][] TableArray { get; set; }
+
             private string _fontName = "仿宋";
             /// <summary>
             /// 使用字体
@@ -265,6 +296,23 @@ namespace Sweeter
                     break;
             }
             return res;
+        }
+
+        //设置字体样式
+        public static XWPFParagraph SetCellText(XWPFDocument doc, XWPFTable table, string setText)
+        {
+            //table中的文字格式设置  
+            CT_P para = new CT_P();
+            XWPFParagraph pCell = new XWPFParagraph(para, table.Body);
+            pCell.Alignment = ParagraphAlignment.CENTER;//字体居中  
+            pCell.VerticalAlignment = TextAlignment.CENTER;//字体居中  
+
+            XWPFRun r1c1 = pCell.CreateRun();
+            r1c1.SetText(setText);
+            r1c1.FontSize = 12;
+            r1c1.FontFamily = "华文楷体";
+            //r1c1.SetTextPosition(20);//设置高度  
+            return pCell;
         }
         #endregion
     }
