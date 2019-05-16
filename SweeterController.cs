@@ -210,7 +210,7 @@ namespace Sweeter
                     //添加回车
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
-                        MainContent = ((char)11).ToString(),
+                        MainContent = "\r\n",
                         FontSize = _fontSize
                     });
 

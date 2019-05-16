@@ -44,6 +44,7 @@ namespace Sweeter
                 //创建标题
                 if (titleSetting != null && !string.IsNullOrEmpty(titleSetting.Title))
                 {
+                    p.AddNewPPr().AddNewSpacing().line = "500";
                     gr.GetCTR().AddNewRPr().AddNewRFonts().ascii = titleSetting.FontName;
                     gr.GetCTR().AddNewRPr().AddNewRFonts().eastAsia = titleSetting.FontName;
                     gr.GetCTR().AddNewRPr().AddNewRFonts().hint = ST_Hint.eastAsia;
@@ -192,7 +193,7 @@ namespace Sweeter
                     this._fontName = value;
                 }
             }
-            private int _fontSize = 34;
+            private int _fontSize = 30;
             /// <summary>
             /// 字体大小，默认2号字体
             /// </summary>
