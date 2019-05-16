@@ -117,10 +117,11 @@ namespace Sweeter
         /// </summary>
         /// <param name="ControllerNames">控制器名称数组</param>
         /// <param name="IsAll">是否导出全部 默认否</param>
-        public ActionResult ExportApiWord(string[] ControllerNames, bool IsAll = false)
+        public ActionResult ExportApiWord(string ControllerNames, bool IsAll = false)
         {
             List<ControllerModel> controllers = GetControllerModelList();
-            if (!IsAll) controllers = controllers.Where(t => ControllerNames.Contains(t.ControllerName)).ToList();
+            if (!IsAll) controllers = controllers.Where(t => ControllerNames.Split(';').Contains(t.ControllerName)).ToList();
+
             var itemSettingList = new List<Sweeter.NpoiWordHelper.ItemSetting>();
             foreach (ControllerModel controller in controllers)
             {
@@ -138,13 +139,13 @@ namespace Sweeter
                     //});
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
-                        MainContent = "方法名称：" + method.MethodName,
+                        MainContent = "请求URL：" + method.MethodUrl,
                         FontSize = _fontSize,
                         HasBold = true
                     });
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
-                        MainContent = "接口说明：" + method.MethodSummary,
+                        MainContent = "方法名称：" + method.MethodName,
                         FontSize = _fontSize
                     });
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
@@ -154,7 +155,7 @@ namespace Sweeter
                     });
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
-                        MainContent = "请求URL：" + method.MethodUrl,
+                        MainContent = "接口说明：" + method.MethodSummary,
                         FontSize = _fontSize
                     });
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
@@ -169,7 +170,6 @@ namespace Sweeter
                         FontSize = _fontSize,
                         HasBold = true
                     });
-
                     //循环获取请求参数
                     string[][] paramTableArray = new string[methodModel.ParamList.Count + 1][];
                     paramTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
@@ -192,7 +192,6 @@ namespace Sweeter
                           FontSize = _fontSize,
                           HasBold = true
                       });
-
                     //循环获取响应内容
                     string[][] returnTableArray = new string[methodModel.ReturnList.Count + 1][];
                     returnTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
@@ -211,8 +210,7 @@ namespace Sweeter
                     //添加回车
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
-                        MainContent = @"
-",
+                        MainContent = "\r\r",
                         FontSize = _fontSize
                     });
 
@@ -229,7 +227,7 @@ namespace Sweeter
             }
             var documentSetting = new Sweeter.NpoiWordHelper.DocumentSetting()
             {
-                SavePath = @"E:\doc\" + Guid.NewGuid().ToString("N") + ".docx",
+                //SavePath = @"E:\doc\" + Guid.NewGuid().ToString("N") + ".docx",
                 ItemSettingList = itemSettingList
             };
 
