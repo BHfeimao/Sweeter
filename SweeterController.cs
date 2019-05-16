@@ -57,7 +57,7 @@ namespace Sweeter
                 }
                 return Json("Sweeter@power by 2019");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Json(string.Format("Error:{0}    --Sweeter@power by 2019", ex.Message));
             }
@@ -115,14 +115,68 @@ namespace Sweeter
         /// </summary>
         /// <param name="ControllerNames">控制器名称数组</param>
         /// <param name="IsAll">是否导出全部 默认否</param>
-        public void ExportApiWord(string[] ControllerNames, bool IsAll=false)
+        public void ExportApiWord(string[] ControllerNames, bool IsAll = false)
         {
             List<ControllerModel> controllers = GetControllerModelList();
             if (!IsAll) controllers = controllers.Where(t => ControllerNames.Contains(t.ControllerName)).ToList();
+            var itemSettingList = new List<Sweeter.NpoiWordHelper.ItemSetting>();
             foreach (ControllerModel controller in controllers)
             {
                 //todo:根据控制器获取方法并导出Word文档
+                var methodList = GetMethodModelList(controller.ControllerName);
+                var mainContentSettingList = new List<NpoiWordHelper.ContentItemSetting>();
+                foreach (var method in methodList)
+                {
+                    var _fontSize = 24;
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "Method：" + method.Method,
+                        FontSize = _fontSize
+                    });
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "MethodName：" + method.MethodName,
+                        FontSize = _fontSize
+                    });
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "MethodSummary：" + method.MethodSummary,
+                        FontSize = _fontSize
+                    });
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "MethodType：" + method.MethodType,
+                        FontSize = _fontSize
+                    });
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "MethodUrl：" + method.MethodUrl,
+                        FontSize = _fontSize
+                    });
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = @"
+                        ",
+                        FontSize = _fontSize
+                    });
+                }
+
+                itemSettingList.Add(new NpoiWordHelper.ItemSetting()
+                {
+                    TitleSetting = new NpoiWordHelper.ContentItemSetting()
+                    {
+                        Title = controller.ControllerName
+                    },
+                    MainContentSettingList = mainContentSettingList
+                });
             }
+            var documentSetting = new Sweeter.NpoiWordHelper.DocumentSetting()
+            {
+                SavePath = @"E:\doc\" + Guid.NewGuid().ToString("N") + ".docx",
+                ItemSettingList = itemSettingList
+            };
+
+            NpoiWordHelper.ExportDocument(documentSetting);
         }
 
         #region 私有方法
@@ -304,7 +358,7 @@ namespace Sweeter
         /// <param name="propertyMembers">属性注释内容</param>
         /// <param name="depth">模型深度</param>
         /// <returns></returns>
-        private void GetJsonModle(Type type, List<Member> propertyMembers, int depth,ref List<JsonModle> list)
+        private void GetJsonModle(Type type, List<Member> propertyMembers, int depth, ref List<JsonModle> list)
         {
             List<FieldInfo> fields = type.GetFields().ToList();
             List<PropertyInfo> properties = type.GetProperties().ToList();
@@ -347,6 +401,8 @@ namespace Sweeter
                 GetJsonModle(type.BaseType, propertyMembers, depth, ref list);
             }
         }
+
+
         #endregion
     }
 }
