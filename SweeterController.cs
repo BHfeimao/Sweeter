@@ -238,7 +238,7 @@ namespace Sweeter
                 {
                     TitleSetting = new NpoiWordHelper.ContentItemSetting()
                     {
-                        Title = controller.ControllerName
+                        Title = controller.ControllerName+"（"+controller.ControllerSummary+"）"
                     },
                     MainContentSettingList = mainContentSettingList
                 });
