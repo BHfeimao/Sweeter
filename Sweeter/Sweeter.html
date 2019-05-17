@@ -6,7 +6,10 @@
     <link href="bootstrap.min.css" rel="stylesheet" />
     <script src="jquery-2.2.3.min.js"></script>
 </head>
-<body>
+<body style="margin:0 auto;width:80%;">
+    <div style="margin:10px;">
+        <a href="\Sweeter\ExportApiWord?isall=true" style="border:solid 1px #808080;padding:5px;color:#000;text-decoration:none;">word导出所有控制器</a>
+    </div>
     <div id="ctrlTable">
         <table class="table table-hover">
             <thead>
@@ -99,7 +102,7 @@
                 success: function (data) {
                     for (var i = 0; i < data.length; i++) {
                         var item = data[i];
-                        var tr = "<tr id='ctrl_tr" + (i + 1) + "'><td></td><td></td><td></td><td><a href='javascript:;' class='ShowMethod' data-ctrlname='" + item.ControllerName + "'>查看</a></td></tr>";
+                        var tr = "<tr id='ctrl_tr" + (i + 1) + "'><td></td><td></td><td></td><td><a href='javascript:;' class='ShowMethod' data-ctrlname='" + item.ControllerName + "'>查看</a>&nbsp;&nbsp;<a href='/Sweeter/ExportApiWord?ControllerNames=" + item.ControllerName + "'>导出</a></td></tr>";
                         $("#ctrl_tbody").append(tr);
                         $("#ctrl_tr" + (i + 1) + " td:eq(0)").text(i + 1);
                         $("#ctrl_tr" + (i + 1) + " td:eq(1)").text(item.ControllerName);

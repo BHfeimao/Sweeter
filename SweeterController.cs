@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Configuration;
+using NPOI.XWPF.UserModel;
+using NPOI.OpenXmlFormats.Wordprocessing;
 
 namespace Sweeter
 {
@@ -57,7 +59,7 @@ namespace Sweeter
                 }
                 return Json("Sweeter@power by 2019");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Json(string.Format("Error:{0}    --Sweeter@power by 2019", ex.Message));
             }
@@ -115,14 +117,140 @@ namespace Sweeter
         /// </summary>
         /// <param name="ControllerNames">控制器名称数组</param>
         /// <param name="IsAll">是否导出全部 默认否</param>
-        public void ExportApiWord(string[] ControllerNames, bool IsAll=false)
+        public ActionResult ExportApiWord(string ControllerNames, bool IsAll = false)
         {
             List<ControllerModel> controllers = GetControllerModelList();
-            if (!IsAll) controllers = controllers.Where(t => ControllerNames.Contains(t.ControllerName)).ToList();
+            if (!IsAll) controllers = controllers.Where(t => ControllerNames.Split(';').Contains(t.ControllerName)).ToList();
+
+            var itemSettingList = new List<Sweeter.NpoiWordHelper.ItemSetting>();
             foreach (ControllerModel controller in controllers)
             {
                 //todo:根据控制器获取方法并导出Word文档
+                var methodList = GetMethodModelList(controller.ControllerName);
+                var mainContentSettingList = new List<NpoiWordHelper.ContentItemSetting>();
+                foreach (var method in methodList)
+                {
+                    var methodModel = this.GetMethodModelByName(controller.ControllerName, method.MethodName);
+                    var _fontSize = 17;
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "请求URL：" + method.MethodUrl,
+                        FontSize = _fontSize,
+                        HasBold = true
+                    });
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "方法名称：" + method.MethodName,
+                        FontSize = _fontSize
+                    });
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "请求类型：" + method.MethodType,
+                        FontSize = _fontSize
+                    });
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "接口说明：" + method.MethodSummary,
+                        FontSize = _fontSize
+                    });
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "返回注释：" + method.ReturnRemark,
+                        FontSize = _fontSize
+                    });
+
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "请求参数：",
+                        FontSize = _fontSize,
+                        HasBold = true
+                    });
+                    //循环获取请求参数
+                    string[][] paramTableArray = new string[methodModel.ParamList.Count + 1][];
+                    paramTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
+
+                    string[][] paramChildTableArray = null;
+                    for (int i = 0; i < methodModel.ParamList.Count; i++)
+                    {
+                        var param = methodModel.ParamList[i];
+                        paramTableArray[i + 1] = new string[] { param.ColumName, param.ColumType, param.DefaultValue, param.ColumSummary };
+                        //如果是实体类，则获取实体类属性
+                        if (param.ChildColumList != null && param.ChildColumList.Count > 0)
+                        {
+                            paramChildTableArray = new string[param.ChildColumList.Count+1][];
+                            paramChildTableArray[0] = new string[] { "子名称", "类型", "默认值", "说明" };
+                            for (int j = 0; j < param.ChildColumList.Count; j++)
+                            {
+                                var childParam = param.ChildColumList[j];
+                                paramChildTableArray[j + 1] = new string[] { childParam.ColumName, childParam.ColumType, childParam.DefaultValue, childParam.ColumSummary };
+                            }
+                        }
+
+                    }
+                    //添加表格-字段参数
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = @"",
+                        FontSize = _fontSize,
+                        TableArray = paramTableArray
+                    });
+                    //添加表格-解析实体类参数
+                    if (paramChildTableArray != null)
+                    {
+                        mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                        {
+                            MainContent = "\r\n",
+                            FontSize = _fontSize,
+                            TableArray = paramChildTableArray
+                        });
+                    }
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                      {
+                          MainContent = "响应内容：",
+                          FontSize = _fontSize,
+                          HasBold = true
+                      });
+                    //添加表格-循环获取响应内容
+                    string[][] returnTableArray = new string[methodModel.ReturnList.Count + 1][];
+                    returnTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
+                    for (int i = 0; i < methodModel.ReturnList.Count; i++)
+                    {
+                        var param = methodModel.ReturnList[i];
+                        returnTableArray[i + 1] = new string[] { param.ColumName, param.ColumType, param.DefaultValue, param.ColumSummary };
+                    }
+
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = @"",
+                        FontSize = _fontSize,
+                        TableArray = returnTableArray
+                    });
+                    //添加回车
+                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                    {
+                        MainContent = "\r\n",
+                        FontSize = _fontSize
+                    });
+
+                }
+
+                itemSettingList.Add(new NpoiWordHelper.ItemSetting()
+                {
+                    TitleSetting = new NpoiWordHelper.ContentItemSetting()
+                    {
+                        Title = controller.ControllerName
+                    },
+                    MainContentSettingList = mainContentSettingList
+                });
             }
+            var documentSetting = new Sweeter.NpoiWordHelper.DocumentSetting()
+            {
+                ItemSettingList = itemSettingList
+            };
+
+            var bytes = NpoiWordHelper.ExportDocument(documentSetting);
+
+            return File(bytes, "application/vnd.ms-word", DateTime.Now.ToString("yyyyMMddHHmmss") + ".docx");
         }
 
         #region 私有方法
@@ -304,7 +432,7 @@ namespace Sweeter
         /// <param name="propertyMembers">属性注释内容</param>
         /// <param name="depth">模型深度</param>
         /// <returns></returns>
-        private void GetJsonModle(Type type, List<Member> propertyMembers, int depth,ref List<JsonModle> list)
+        private void GetJsonModle(Type type, List<Member> propertyMembers, int depth, ref List<JsonModle> list)
         {
             List<FieldInfo> fields = type.GetFields().ToList();
             List<PropertyInfo> properties = type.GetProperties().ToList();
@@ -347,6 +475,7 @@ namespace Sweeter
                 GetJsonModle(type.BaseType, propertyMembers, depth, ref list);
             }
         }
+
         #endregion
     }
 }
