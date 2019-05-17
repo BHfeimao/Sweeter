@@ -115,18 +115,21 @@ namespace Sweeter
         /// <summary>
         /// 导出API文档
         /// </summary>
-        /// <param name="ControllerNames">控制器名称数组</param>
+        /// <param name="ControllerNames">控制器名称，多个控制器使用“;”隔开</param>
         /// <param name="IsAll">是否导出全部 默认否</param>
         public ActionResult ExportApiWord(string ControllerNames, bool IsAll = false)
         {
             List<ControllerModel> controllers = GetControllerModelList();
             if (!IsAll) controllers = controllers.Where(t => ControllerNames.Split(';').Contains(t.ControllerName)).ToList();
 
+            #region 将数据转化为word格式
+
             var itemSettingList = new List<Sweeter.NpoiWordHelper.ItemSetting>();
             foreach (ControllerModel controller in controllers)
             {
                 //todo:根据控制器获取方法并导出Word文档
                 var methodList = GetMethodModelList(controller.ControllerName);
+
                 var mainContentSettingList = new List<NpoiWordHelper.ContentItemSetting>();
                 foreach (var method in methodList)
                 {
@@ -166,90 +169,76 @@ namespace Sweeter
                         HasBold = true
                     });
                     //循环获取请求参数
-                    string[][] paramTableArray = new string[methodModel.ParamList.Count + 1][];
-                    paramTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
-
-                    string[][] paramChildTableArray = null;
-                    for (int i = 0; i < methodModel.ParamList.Count; i++)
+                    var paramTableArrayList = new List<string[][]>();
+                    GetTableArrayList(paramTableArrayList, methodModel.ParamList);
+                    foreach (var tableArray in paramTableArrayList)
                     {
-                        var param = methodModel.ParamList[i];
-                        paramTableArray[i + 1] = new string[] { param.ColumName, param.ColumType, param.DefaultValue, param.ColumSummary };
-                        //如果是实体类，则获取实体类属性
-                        if (param.ChildColumList != null && param.ChildColumList.Count > 0)
-                        {
-                            paramChildTableArray = new string[param.ChildColumList.Count+1][];
-                            paramChildTableArray[0] = new string[] { "子名称", "类型", "默认值", "说明" };
-                            for (int j = 0; j < param.ChildColumList.Count; j++)
-                            {
-                                var childParam = param.ChildColumList[j];
-                                paramChildTableArray[j + 1] = new string[] { childParam.ColumName, childParam.ColumType, childParam.DefaultValue, childParam.ColumSummary };
-                            }
-                        }
-
-                    }
-                    //添加表格-字段参数
-                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
-                    {
-                        MainContent = @"",
-                        FontSize = _fontSize,
-                        TableArray = paramTableArray
-                    });
-                    //添加表格-解析实体类参数
-                    if (paramChildTableArray != null)
-                    {
+                        mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                       {
+                           MainContent = "",
+                           FontSize = _fontSize,
+                           TableArray = tableArray
+                       });
                         mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                         {
                             MainContent = "\r\n",
-                            FontSize = _fontSize,
-                            TableArray = paramChildTableArray
+                            FontSize = _fontSize
                         });
                     }
+
+                    //添加表格-字段参数
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                       {
                           MainContent = "响应内容：",
                           FontSize = _fontSize,
                           HasBold = true
                       });
+
                     //添加表格-循环获取响应内容
-                    string[][] returnTableArray = new string[methodModel.ReturnList.Count + 1][];
-                    returnTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
-                    for (int i = 0; i < methodModel.ReturnList.Count; i++)
+                    var returnTableArrayList = new List<string[][]>();
+                    GetTableArrayList(returnTableArrayList, methodModel.ReturnList);
+                    foreach (var tableArray in returnTableArrayList)
                     {
-                        var param = methodModel.ReturnList[i];
-                        returnTableArray[i + 1] = new string[] { param.ColumName, param.ColumType, param.DefaultValue, param.ColumSummary };
+                        mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                        {
+                            MainContent = "",
+                            FontSize = _fontSize,
+                            TableArray = tableArray
+                        });
+                        mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                        {
+                            MainContent = "\r\n",
+                            FontSize = _fontSize
+                        });
                     }
 
-                    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
-                    {
-                        MainContent = @"",
-                        FontSize = _fontSize,
-                        TableArray = returnTableArray
-                    });
                     //添加回车
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                     {
                         MainContent = "\r\n",
                         FontSize = _fontSize
                     });
-
                 }
 
                 itemSettingList.Add(new NpoiWordHelper.ItemSetting()
                 {
                     TitleSetting = new NpoiWordHelper.ContentItemSetting()
                     {
-                        Title = controller.ControllerName
+                        Title = controller.ControllerName + "（" + controller.ControllerSummary + "）"
                     },
                     MainContentSettingList = mainContentSettingList
                 });
             }
+
+            #endregion
+
             var documentSetting = new Sweeter.NpoiWordHelper.DocumentSetting()
             {
                 ItemSettingList = itemSettingList
             };
 
+            //将文件输出成二进制格式，并返回客户端
             var bytes = NpoiWordHelper.ExportDocument(documentSetting);
-
             return File(bytes, "application/vnd.ms-word", DateTime.Now.ToString("yyyyMMddHHmmss") + ".docx");
         }
 
@@ -474,6 +463,31 @@ namespace Sweeter
             {
                 GetJsonModle(type.BaseType, propertyMembers, depth, ref list);
             }
+        }
+
+        /// <summary>
+        /// 将属性list转化为表格形式
+        /// </summary>
+        /// <param name="tableArrayList">存储表格结果</param>
+        /// <param name="paramList">属性list</param>
+        private void GetTableArrayList(List<string[][]> tableArrayList, List<JsonModle> paramList, int depth = 0)
+        {
+            if (depth > 4) return;
+            string[][] paramTableArray = new string[paramList.Count + 1][];
+            paramTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
+            foreach (var param in paramList)
+            {
+                paramTableArray[paramList.IndexOf(param) + 1] = new string[] { param.ColumName, param.ColumType, param.DefaultValue, param.ColumSummary };
+                if (paramList.IndexOf(param) + 1 == paramList.Count)//最后一次循环
+                {
+                    tableArrayList.Add(paramTableArray);
+                    if (param.ChildColumList != null && param.ChildColumList.Count > 0)
+                    {
+                        GetTableArrayList(tableArrayList, param.ChildColumList, depth++);
+                    }
+                }
+            }
+
         }
 
         #endregion
