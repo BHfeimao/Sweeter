@@ -169,97 +169,48 @@ namespace Sweeter
                         HasBold = true
                     });
                     //循环获取请求参数
-                    //string[][] paramTableArray = new string[methodModel.ParamList.Count + 1][];
-                    //paramTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
-
-                    //string[][] paramChildTableArray = null;
-                    //for (int i = 0; i < methodModel.ParamList.Count; i++)
-                    //{
-                    //    var param = methodModel.ParamList[i];
-                    //    paramTableArray[i + 1] = new string[] { param.ColumName, param.ColumType, param.DefaultValue, param.ColumSummary };
-                    //    //如果是实体类，则获取实体类属性
-                    //    if (param.ChildColumList != null && param.ChildColumList.Count > 0)
-                    //    {
-                    //        paramChildTableArray = new string[param.ChildColumList.Count + 1][];
-                    //        paramChildTableArray[0] = new string[] { "子名称", "类型", "默认值", "说明" };
-                    //        for (int j = 0; j < param.ChildColumList.Count; j++)
-                    //        {
-                    //            var childParam = param.ChildColumList[j];
-                    //            paramChildTableArray[j + 1] = new string[] { childParam.ColumName, childParam.ColumType, childParam.DefaultValue, childParam.ColumSummary };
-                    //        }
-                    //    }
-
-                    //}
-
                     var paramTableArrayList = new List<string[][]>();
-
                     GetTableArrayList(paramTableArrayList, methodModel.ParamList);
-
                     foreach (var tableArray in paramTableArrayList)
                     {
                         mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                        {
-                           MainContent = "\r\n",
+                           MainContent = "",
                            FontSize = _fontSize,
                            TableArray = tableArray
                        });
+                        mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                        {
+                            MainContent = "\r\n",
+                            FontSize = _fontSize
+                        });
                     }
 
-
-                    ////添加表格-字段参数
-                    //mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
-                    //{
-                    //    MainContent = @"",
-                    //    FontSize = _fontSize,
-                    //    TableArray = paramTableArray
-                    //});
-                    ////添加表格-解析实体类参数
-                    //if (paramChildTableArray != null)
-                    //{
-                    //    mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
-                    //    {
-                    //        MainContent = "\r\n",
-                    //        FontSize = _fontSize,
-                    //        TableArray = paramChildTableArray
-                    //    });
-                    //}
+                    //添加表格-字段参数
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                       {
                           MainContent = "响应内容：",
                           FontSize = _fontSize,
                           HasBold = true
                       });
+
                     //添加表格-循环获取响应内容
-                    //string[][] returnTableArray = new string[methodModel.ReturnList.Count + 1][];
-                    //returnTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
-                    //for (int i = 0; i < methodModel.ReturnList.Count; i++)
-                    //{
-                    //    var param = methodModel.ReturnList[i];
-                    //    returnTableArray[i + 1] = new string[] { param.ColumName, param.ColumType, param.DefaultValue, param.ColumSummary };
-                    //}
-
-                    //mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
-                    //{
-                    //    MainContent = @"",
-                    //    FontSize = _fontSize,
-                    //    TableArray = returnTableArray
-                    //});
-
-
                     var returnTableArrayList = new List<string[][]>();
-
                     GetTableArrayList(returnTableArrayList, methodModel.ReturnList);
-
                     foreach (var tableArray in returnTableArrayList)
                     {
                         mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
                         {
-                            MainContent = "\r\n",
+                            MainContent = "",
                             FontSize = _fontSize,
                             TableArray = tableArray
                         });
+                        mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
+                        {
+                            MainContent = "\r\n",
+                            FontSize = _fontSize
+                        });
                     }
-
 
                     //添加回车
                     mainContentSettingList.Add(new NpoiWordHelper.ContentItemSetting()
@@ -267,7 +218,6 @@ namespace Sweeter
                         MainContent = "\r\n",
                         FontSize = _fontSize
                     });
-
                 }
 
                 itemSettingList.Add(new NpoiWordHelper.ItemSetting()
@@ -536,7 +486,7 @@ namespace Sweeter
                     }
                 }
             }
-           
+
         }
 
         #endregion
