@@ -122,11 +122,14 @@ namespace Sweeter
             List<ControllerModel> controllers = GetControllerModelList();
             if (!IsAll) controllers = controllers.Where(t => ControllerNames.Split(';').Contains(t.ControllerName)).ToList();
 
+            #region 将数据转化为word格式
+
             var itemSettingList = new List<Sweeter.NpoiWordHelper.ItemSetting>();
             foreach (ControllerModel controller in controllers)
             {
                 //todo:根据控制器获取方法并导出Word文档
                 var methodList = GetMethodModelList(controller.ControllerName);
+
                 var mainContentSettingList = new List<NpoiWordHelper.ContentItemSetting>();
                 foreach (var method in methodList)
                 {
@@ -243,13 +246,16 @@ namespace Sweeter
                     MainContentSettingList = mainContentSettingList
                 });
             }
+
+            #endregion
+
             var documentSetting = new Sweeter.NpoiWordHelper.DocumentSetting()
             {
                 ItemSettingList = itemSettingList
             };
 
+            //将文件输出成二进制格式，并返回客户端
             var bytes = NpoiWordHelper.ExportDocument(documentSetting);
-
             return File(bytes, "application/vnd.ms-word", DateTime.Now.ToString("yyyyMMddHHmmss") + ".docx");
         }
 
