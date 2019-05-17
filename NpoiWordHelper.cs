@@ -89,7 +89,7 @@ namespace Sweeter
                         //创建表格-提前创建好表格后填数
                         XWPFTable tableContent = docx.CreateTable(ary.Length, ary[0].Length);//行列
                         tableContent.Width = 1000 * ary[0].Length;
-                        for (int i = 0; i < ary.Length; i++)
+                        for (int i = 0; i < ary[0].Length; i++)
                         {
                             tableContent.SetColumnWidth(i, 1000);
                         }
