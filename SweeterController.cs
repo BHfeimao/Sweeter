@@ -470,8 +470,9 @@ namespace Sweeter
         /// </summary>
         /// <param name="tableArrayList">存储表格结果</param>
         /// <param name="paramList">属性list</param>
-        private void GetTableArrayList(List<string[][]> tableArrayList, List<JsonModle> paramList)
+        private void GetTableArrayList(List<string[][]> tableArrayList, List<JsonModle> paramList, int depth = 0)
         {
+            if (depth > 4) return;
             string[][] paramTableArray = new string[paramList.Count + 1][];
             paramTableArray[0] = new string[] { "名称", "类型", "默认值", "说明" };
             foreach (var param in paramList)
@@ -482,7 +483,7 @@ namespace Sweeter
                     tableArrayList.Add(paramTableArray);
                     if (param.ChildColumList != null && param.ChildColumList.Count > 0)
                     {
-                        GetTableArrayList(tableArrayList, param.ChildColumList);
+                        GetTableArrayList(tableArrayList, param.ChildColumList, depth++);
                     }
                 }
             }
